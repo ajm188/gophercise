@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"flag"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -10,18 +12,19 @@ import (
 )
 
 func main() {
+	yamlPath := flag.String("shorturls", "shorts.yaml", "Path to a YAML config for shortened URLs")
+	flag.Parse()
+
+	yaml, err := ioutil.ReadFile(*yamlPath)
+	if err != nil {
+		panic(err)
+	}
 	mux := defaultMux()
 	pathMap := map[string]string{
 		"/urlshort-godoc": "https://godoc.org/github.com/gophercises/urlshort",
 		"/yaml-godoc":     "https://godoc.org/gopkg.in/yaml.v2",
 	}
 	mapHandler := MapHandler(pathMap, mux)
-	yaml := `
-- path: /urlshort
-  url: https://github.com/gophercises/urlshort
-- path: /urlshort-final
-  url: https://github.com/gophercises/urlshort/tree/solution
-`
 	yamlHandler := YamlHandler([]byte(yaml), mapHandler)
 	http.ListenAndServe(":8080", yamlHandler)
 }
