@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"flag"
 	"io/ioutil"
+	"os"
 	"strings"
+	"time"
 )
 
 type Problem struct {
@@ -32,22 +35,57 @@ func parseProblems(rawText string) []Problem {
 	return problems
 }
 
-func quiz(problems []Problem) int {
-	score := 0
-	var answer string
-	for _, problem := range problems {
-		fmt.Printf("%s: ", problem.question)
-		fmt.Scanf("%s\n", &answer)
-		if answer == problem.answer {
-			score++
+func quiz(problems []Problem, timeLimit int) int {
+	reader := bufio.NewReader(os.Stdin)
+	problemChan := make(chan Problem, len(problems))
+	scoreChan := make(chan int)
+
+	go func(problems chan Problem, scores chan int) {
+		for {
+			problem := <-problems
+			question := problem.question
+			fmt.Printf("%s: ", question)
+			answer, _ := reader.ReadString('\n')
+			answer = answer[:len(answer) - 1]
+			score := 0
+			if problem.answer == answer {
+				score = 1
+			}
+			scores <- score
 		}
+	}(problemChan, scoreChan)
+	defer close(scoreChan)
+	defer close(problemChan)
+	defer os.Stdin.Close()
+
+	fmt.Println("Press enter to start")
+	_, err := reader.ReadString('\n')
+	if err != nil {
+		return 0
 	}
 
+	stopTime := time.Now().Add(time.Duration(timeLimit) * time.Second)
+	for _, problem := range problems {
+		problemChan <- problem
+	}
+	score := 0
+	for {
+		if !stopTime.After(time.Now()) {
+			return score
+		}
+		select {
+		case nextScore := <-scoreChan:
+			score += nextScore
+		default:
+			continue
+		}
+	}
 	return score
 }
 
 func main() {
 	problemFilePath := flag.String("problem-file", "problems.csv", "Path to CSV problems file")
+	timeLimit := flag.Int("time-limit", 30, "Time limit in seconds.")
 	flag.Parse()
 
 	problemBytes, err := ioutil.ReadFile(*problemFilePath)
@@ -56,6 +94,6 @@ func main() {
 	}
 	problems := parseProblems(string(problemBytes))
 
-	score := quiz(problems)
-	fmt.Println(score)
+	score := quiz(problems, *timeLimit)
+	fmt.Printf("\nFinal score: %d / %d\n", score, len(problems))
 }
