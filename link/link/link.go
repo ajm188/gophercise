@@ -59,4 +59,3 @@ func findHref(tokenizer *html.Tokenizer) string {
 		}
 	}
 }
-
