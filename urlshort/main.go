@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -51,7 +51,7 @@ func MapHandler(pathMap map[string]string, fallback http.Handler) http.HandlerFu
 func YamlHandler(yml []byte, fallback http.Handler) http.HandlerFunc {
 	type ShortURL struct {
 		Path string
-		URL string `yaml:"url"`
+		URL  string `yaml:"url"`
 	}
 	var urls []ShortURL
 	err := yaml.Unmarshal(yml, &urls)

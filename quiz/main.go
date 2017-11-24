@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -12,7 +12,7 @@ import (
 
 type Problem struct {
 	question string
-	answer string
+	answer   string
 }
 
 func parseProblems(rawText string) []Problem {
@@ -25,10 +25,10 @@ func parseProblems(rawText string) []Problem {
 		comma := strings.LastIndex(line, ",")
 		problem := Problem{
 			question: line[:comma],
-			answer: line[comma + 1:],
+			answer:   line[comma+1:],
 		}
 
-		rawText = rawText[newline + 1:]
+		rawText = rawText[newline+1:]
 		problems[i] = problem
 	}
 
@@ -46,7 +46,7 @@ func quiz(problems []Problem, timeLimit int) int {
 			question := problem.question
 			fmt.Printf("%s: ", question)
 			answer, _ := reader.ReadString('\n')
-			answer = answer[:len(answer) - 1]
+			answer = answer[:len(answer)-1]
 			score := 0
 			if problem.answer == answer {
 				score = 1

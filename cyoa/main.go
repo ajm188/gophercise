@@ -10,8 +10,8 @@ import (
 )
 
 type Scene struct {
-	Title string
-	Story []string
+	Title   string
+	Story   []string
 	Options []SceneOption
 }
 
@@ -21,7 +21,7 @@ func (scene *Scene) StoryBlob() string {
 
 type SceneOption struct {
 	Text string
-	Arc string
+	Arc  string
 }
 
 func buildHandler(scenes map[string]Scene, tmpl *template.Template) http.HandlerFunc {
