@@ -2,6 +2,7 @@ package link
 
 import (
 	"io"
+	"net/url"
 )
 
 import (
@@ -9,8 +10,16 @@ import (
 )
 
 type Link struct {
-	Href string
+	Href *url.URL
 	Text string
+}
+
+func NewLink(href, text string) (*Link, error) {
+	parsedHref, err := url.Parse(href)
+	if err != nil {
+		return nil, err
+	}
+	return &Link{parsedHref, text}, nil
 }
 
 func FindLinks(r io.Reader) []Link {
@@ -25,7 +34,11 @@ func FindLinks(r io.Reader) []Link {
 			if string(tag) == "a" && attrs {
 				href := findHref(tokenizer)
 				text := findText(tokenizer)
-				links = append(links, Link{href, text})
+				link, err := NewLink(href, text)
+				if err != nil {
+					panic(err)
+				}
+				links = append(links, *link)
 			}
 		}
 	}
